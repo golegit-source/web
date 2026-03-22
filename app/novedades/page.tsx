@@ -12,8 +12,6 @@ export const metadata = {
     "Alertas laborales, novedades en remuneraciones y actualizaciones legales para empleadores de trabajadoras de casa particular.",
 };
 
-export { categoriaColor, formatFecha };
-
 export default async function NovedadesPage({
   searchParams,
 }: {
