@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BlockRenderer from "@/components/notion/BlockRenderer";
 import { getPost, getBlocks } from "@/lib/notion";
-import { categoriaColor, formatFecha } from "../NovedadesClient";
+import { categoriaColor, formatFecha } from "../utils";
 import { SITE_CONFIG } from "@/lib/config";
 import CtaButton from "@/components/CtaButton";
 
