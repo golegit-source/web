@@ -47,6 +47,11 @@ export default function Footer() {
                   Preguntas frecuentes
                 </a>
               </li>
+              <li>
+                <Link href="/simulador" className="text-sm hover:text-white transition-colors">
+                  Simuladores
+                </Link>
+              </li>
             </ul>
           </div>
 
