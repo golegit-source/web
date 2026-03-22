@@ -223,15 +223,14 @@ export default function JornadaPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <input
-                    type="number"
-                    min={COLACION_MIN}
-                    max={COLACION_MAX}
+                    type="text"
+                    inputMode="numeric"
                     value={colacion}
                     onChange={(e) => {
-                      const v = Math.min(COLACION_MAX, Math.max(COLACION_MIN, parseInt(e.target.value) || COLACION_MIN));
-                      setColacion(v);
+                      const raw = parseInt(e.target.value.replace(/\D/g, "")) || COLACION_MIN;
+                      setColacion(Math.min(COLACION_MAX, Math.max(COLACION_MIN, raw)));
                     }}
-                    className="w-20 text-right bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400"
+                    className="w-20 text-center bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400"
                   />
                   <span className="text-sm text-ink-muted">min</span>
                 </div>
