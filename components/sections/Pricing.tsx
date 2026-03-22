@@ -1,4 +1,5 @@
 import { SITE_CONFIG } from "@/lib/config";
+import CtaButton from "@/components/CtaButton";
 
 const plans = [
   {
@@ -106,10 +107,7 @@ export default function Pricing() {
                 {plan.description}
               </p>
 
-              <a
-                href={SITE_CONFIG.whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <CtaButton
                 className={`block text-center text-sm font-medium py-2.5 px-4 rounded-xl transition-colors ${
                   plan.featured
                     ? "bg-white text-brand-700 hover:bg-brand-50"
@@ -117,7 +115,7 @@ export default function Pricing() {
                 }`}
               >
                 Empezar gratis
-              </a>
+              </CtaButton>
             </div>
           ))}
         </div>

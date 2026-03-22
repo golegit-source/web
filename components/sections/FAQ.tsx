@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import CtaButton from "@/components/CtaButton";
 
 const faqs = [
   {
@@ -84,14 +85,9 @@ export default function FAQ() {
             </h2>
             <p className="text-sm text-ink-muted leading-relaxed">
               ¿Tienes otra pregunta?{" "}
-              <a
-                href="https://wa.me/56912345678"
-                className="text-brand-600 hover:text-brand-700 underline underline-offset-2"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <CtaButton className="text-brand-600 hover:text-brand-700 underline underline-offset-2">
                 Escríbenos por WhatsApp
-              </a>{" "}
+              </CtaButton>{" "}
               y te respondemos.
             </p>
           </div>

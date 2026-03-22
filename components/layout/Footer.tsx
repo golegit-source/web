@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE_CONFIG } from "@/lib/config";
+import CtaButton from "@/components/CtaButton";
 
 export default function Footer() {
   return (
@@ -60,14 +61,9 @@ export default function Footer() {
             <h4 className="text-white text-sm font-medium mb-4">Contacto</h4>
             <ul className="space-y-2.5">
               <li>
-                <a
-                  href={SITE_CONFIG.whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm hover:text-white transition-colors"
-                >
+                <CtaButton className="text-sm hover:text-white transition-colors">
                   WhatsApp
-                </a>
+                </CtaButton>
               </li>
               <li>
                 <a
