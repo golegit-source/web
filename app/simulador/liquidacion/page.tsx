@@ -9,8 +9,8 @@ import { SITE_CONFIG } from "@/lib/config";
 // ─────────────────────────────────────────────────────────────
 // CONSTANTES LEGALES — actualizar cuando cambien
 // ─────────────────────────────────────────────────────────────
-const IMM = 530_000;           // Ingreso Mínimo Mensual — verificar en previred.com
-const TOPE_IMPONIBLE = 3_300_000; // ~81.6 UF × UF vigente — verificar en previred.com
+const IMM = 530_000;
+const TOPE_IMPONIBLE = 3_300_000;
 
 const AFPS = [
   { nombre: "AFP Capital",   comision: 1.44 },
@@ -22,13 +22,12 @@ const AFPS = [
   { nombre: "AFP Uno",       comision: 0.49 },
 ];
 
-// Tasas de cargo del empleador TCP (Previred)
 const TASAS_EMP = {
-  sis:         0.0154,  // Seguro Invalidez y Sobrevivencia
-  afcTcp:      0.0300,  // AFC Seguro Cesantía TCP (2,2% empleador + 0,8% trabajador → Previred)
-  mutual:      0.0093,  // Mutual Acc. Trabajo y Enf. Profesionales
-  cotAdicional: 0.0100, // Cotización adicional empleador (0,9% + 0,1%)
-  indemnizacion: 0.0111,// Indemnización a todo evento TCP (AFC Chile)
+  sis:          0.0154,
+  afcTcp:       0.0300,
+  mutual:       0.0093,
+  cotAdicional: 0.0100,
+  indemnizacion: 0.0111,
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -38,83 +37,35 @@ const clp = (n: number) => "$" + Math.round(n).toLocaleString("es-CL");
 const pct = (n: number) => (n * 100).toFixed(2).replace(".", ",") + "%";
 
 // ─────────────────────────────────────────────────────────────
-// CÁLCULO LIQUIDACIÓN — Contrato de Trabajo TCP
-//
-// Descuentos trabajador: AFP (10% + comisión) + Fonasa (7%)
-//   Solo sobre la base imponible. Los haberes no imponibles NO se descuentan.
-//
-// Aportes empleador a Previred (no descuentan al trabajador):
-//   SIS 1,54% · AFC TCP 3% · Mutual 0,93% · Cot. adic. 1% · Indem. 1,11%
+// COMPONENTES — definidos FUERA del componente página para evitar
+// que React los destruya y recree en cada render (bug input focus)
 // ─────────────────────────────────────────────────────────────
-function calcLiq({
-  sueldoBase,
-  movilizacion,
-  colacionAlimentaria,
-  afpIdx,
-  dias,
+const inputCls =
+  "w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all";
+const labelCls = "block text-xs font-medium text-ink-muted mb-1.5";
+
+function MoneyInput({
+  value, onChange, placeholder,
 }: {
-  sueldoBase: number;
-  movilizacion: number;
-  colacionAlimentaria: number;
-  afpIdx: number;
-  dias: number;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
 }) {
-  const f = dias / 30;
-
-  const baseImponibleMensual = Math.min(sueldoBase, TOPE_IMPONIBLE);
-  const topeAplicado = sueldoBase > TOPE_IMPONIBLE;
-  const sueldoImponible = Math.round(baseImponibleMensual * f);
-
-  const habNoProp = Math.round((movilizacion + colacionAlimentaria) * f);
-  const movilizacionProp = Math.round(movilizacion * f);
-  const colacionProp = Math.round(colacionAlimentaria * f);
-
-  // Sueldo bruto: imponible + no imponibles
-  const bruto = sueldoImponible + habNoProp;
-
-  // ── Descuentos del trabajador ──────────────────────────────
-  const afp = AFPS[afpIdx];
-  const tasaAfp = 10 + afp.comision;
-  const descAfp   = Math.round((sueldoImponible * tasaAfp) / 100);
-  const descSalud = Math.round(sueldoImponible * 0.07);
-  const totalDesc = descAfp + descSalud;
-  const liquido   = bruto - totalDesc;
-
-  // ── Aportes del empleador a Previred ──────────────────────
-  const sis          = Math.round(sueldoImponible * TASAS_EMP.sis);
-  const afcTcp       = Math.round(sueldoImponible * TASAS_EMP.afcTcp);
-  const mutual       = Math.round(sueldoImponible * TASAS_EMP.mutual);
-  const cotAdicional = Math.round(sueldoImponible * TASAS_EMP.cotAdicional);
-  const indem        = Math.round(sueldoImponible * TASAS_EMP.indemnizacion);
-  const totalEmp     = sis + afcTcp + mutual + cotAdicional + indem;
-  const costoTotal   = bruto + totalEmp;
-
-  return {
-    sueldoImponible,
-    movilizacionProp,
-    colacionProp,
-    habNoProp,
-    bruto,
-    descAfp,
-    tasaAfp,
-    descSalud,
-    totalDesc,
-    liquido,
-    sis,
-    afcTcp,
-    mutual,
-    cotAdicional,
-    indem,
-    totalEmp,
-    costoTotal,
-    afpNombre: afp.nombre,
-    topeAplicado,
-  };
+  return (
+    <div className="relative">
+      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-light select-none">$</span>
+      <input
+        type="text"
+        inputMode="numeric"
+        className={inputCls + " pl-7"}
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
+        placeholder={placeholder ?? "0"}
+      />
+    </div>
+  );
 }
 
-// ─────────────────────────────────────────────────────────────
-// COMPONENTES AUXILIARES
-// ─────────────────────────────────────────────────────────────
 function Row({
   label, value, negative, bold, muted, sub,
 }: {
@@ -137,46 +88,128 @@ function Row({
 }
 
 // ─────────────────────────────────────────────────────────────
+// CÁLCULO — desde sueldo base hacia líquido
+// ─────────────────────────────────────────────────────────────
+function calcDesdeBase({
+  sueldoBase, movilizacion, colacion, afpIdx, dias,
+}: {
+  sueldoBase: number; movilizacion: number; colacion: number;
+  afpIdx: number; dias: number;
+}) {
+  const f = dias / 30;
+  const topeAplicado = sueldoBase > TOPE_IMPONIBLE;
+  const sueldoImponible = Math.round(Math.min(sueldoBase, TOPE_IMPONIBLE) * f);
+  const movilizacionProp = Math.round(movilizacion * f);
+  const colacionProp = Math.round(colacion * f);
+  const bruto = sueldoImponible + movilizacionProp + colacionProp;
+
+  const afp = AFPS[afpIdx];
+  const tasaAfp = 10 + afp.comision;
+  const descAfp   = Math.round((sueldoImponible * tasaAfp) / 100);
+  const descSalud = Math.round(sueldoImponible * 0.07);
+  const totalDesc = descAfp + descSalud;
+  const liquido   = bruto - totalDesc;
+
+  const sis          = Math.round(sueldoImponible * TASAS_EMP.sis);
+  const afcTcp       = Math.round(sueldoImponible * TASAS_EMP.afcTcp);
+  const mutual       = Math.round(sueldoImponible * TASAS_EMP.mutual);
+  const cotAdicional = Math.round(sueldoImponible * TASAS_EMP.cotAdicional);
+  const indem        = Math.round(sueldoImponible * TASAS_EMP.indemnizacion);
+  const totalEmp     = sis + afcTcp + mutual + cotAdicional + indem;
+
+  return {
+    sueldoImponible, movilizacionProp, colacionProp, bruto,
+    descAfp, tasaAfp, descSalud, totalDesc, liquido,
+    sis, afcTcp, mutual, cotAdicional, indem, totalEmp,
+    costoTotal: bruto + totalEmp,
+    afpNombre: afp.nombre, topeAplicado,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// CÁLCULO INVERSO — desde líquido pactado hacia sueldo base
+//
+// El líquido pactado INCLUYE movilización y colación (no imponibles).
+// Por tanto:
+//   liquido = sueldoImponible × (1 − tasaTotal) + mov + col
+//   sueldoImponible = (liquido − mov − col) / (1 − tasaTotal)
+// ─────────────────────────────────────────────────────────────
+function calcDesdeLiquido({
+  liquidoPactado, movilizacion, colacion, afpIdx, dias,
+}: {
+  liquidoPactado: number; movilizacion: number; colacion: number;
+  afpIdx: number; dias: number;
+}) {
+  const f = dias / 30;
+  const afp = AFPS[afpIdx];
+  const tasaAfp = 10 + afp.comision;
+  const tasaTotal = tasaAfp / 100 + 0.07; // AFP + Fonasa
+
+  // Despejar imponible mensual desde el líquido proporcional
+  const movilizacionProp = Math.round(movilizacion * f);
+  const colacionProp = Math.round(colacion * f);
+  const baseNetoSinHab = liquidoPactado - movilizacionProp - colacionProp;
+  const sueldoImponible = Math.round(baseNetoSinHab / (1 - tasaTotal));
+
+  // Sueldo base mensual (sin proporcionar)
+  const sueldoBaseMensual = dias < 30 ? Math.round(sueldoImponible / f) : sueldoImponible;
+  const topeAplicado = sueldoBaseMensual > TOPE_IMPONIBLE;
+
+  const bruto = sueldoImponible + movilizacionProp + colacionProp;
+  const descAfp   = Math.round((sueldoImponible * tasaAfp) / 100);
+  const descSalud = Math.round(sueldoImponible * 0.07);
+  const totalDesc = descAfp + descSalud;
+  const liquidoReal = bruto - totalDesc;
+
+  const sis          = Math.round(sueldoImponible * TASAS_EMP.sis);
+  const afcTcp       = Math.round(sueldoImponible * TASAS_EMP.afcTcp);
+  const mutual       = Math.round(sueldoImponible * TASAS_EMP.mutual);
+  const cotAdicional = Math.round(sueldoImponible * TASAS_EMP.cotAdicional);
+  const indem        = Math.round(sueldoImponible * TASAS_EMP.indemnizacion);
+  const totalEmp     = sis + afcTcp + mutual + cotAdicional + indem;
+
+  return {
+    sueldoBaseMensual, sueldoImponible, movilizacionProp, colacionProp, bruto,
+    descAfp, tasaAfp, descSalud, totalDesc, liquidoReal,
+    sis, afcTcp, mutual, cotAdicional, indem, totalEmp,
+    costoTotal: bruto + totalEmp,
+    afpNombre: afp.nombre, topeAplicado,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
 // PÁGINA
 // ─────────────────────────────────────────────────────────────
 export default function LiquidacionPage() {
-  // Defaults → líquido ≈ $602.000 (Habitat + Fonasa, mes completo)
-  const [sueldoRaw,      setSueldoRaw]      = useState("700000");
+  const [modo, setModo] = useState<"base" | "liquido">("base");
+
+  // Modo base → líquido
+  const [sueldoRaw,       setSueldoRaw]       = useState("700000");
+  // Modo líquido → base
+  const [liquidoRaw,      setLiquidoRaw]      = useState("600000");
+
+  // Compartidos
   const [movilizacionRaw, setMovilizacionRaw] = useState("30000");
-  const [colacionRaw,    setColacionRaw]    = useState("0");
-  const [afpIdx,         setAfpIdx]         = useState(2); // Habitat
-  const [dias,           setDias]           = useState(30);
+  const [colacionRaw,     setColacionRaw]     = useState("0");
+  const [afpIdx,          setAfpIdx]          = useState(2); // Habitat
+  const [dias,            setDias]            = useState(30);
 
-  const sueldoBase         = Math.max(0, parseInt(sueldoRaw.replace(/\D/g, ""))         || 0);
-  const movilizacion       = Math.max(0, parseInt(movilizacionRaw.replace(/\D/g, ""))   || 0);
-  const colacionAlimentaria = Math.max(0, parseInt(colacionRaw.replace(/\D/g, ""))      || 0);
+  const sueldoBase  = Math.max(0, parseInt(sueldoRaw.replace(/\D/g, ""))         || 0);
+  const liquidoPact = Math.max(0, parseInt(liquidoRaw.replace(/\D/g, ""))        || 0);
+  const movilizacion = Math.max(0, parseInt(movilizacionRaw.replace(/\D/g, "")) || 0);
+  const colacion     = Math.max(0, parseInt(colacionRaw.replace(/\D/g, ""))      || 0);
 
-  const r = useMemo(
-    () => calcLiq({ sueldoBase, movilizacion, colacionAlimentaria, afpIdx, dias }),
-    [sueldoBase, movilizacion, colacionAlimentaria, afpIdx, dias]
+  const rBase = useMemo(
+    () => calcDesdeBase({ sueldoBase, movilizacion, colacion, afpIdx, dias }),
+    [sueldoBase, movilizacion, colacion, afpIdx, dias]
   );
 
-  const inputCls =
-    "w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all";
-  const labelCls = "block text-xs font-medium text-ink-muted mb-1.5";
+  const rLiq = useMemo(
+    () => calcDesdeLiquido({ liquidoPactado: liquidoPact, movilizacion, colacion, afpIdx, dias }),
+    [liquidoPact, movilizacion, colacion, afpIdx, dias]
+  );
 
-  function MoneyInput({
-    value, onChange, placeholder,
-  }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-    return (
-      <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-light select-none">$</span>
-        <input
-          type="text"
-          inputMode="numeric"
-          className={inputCls + " pl-7"}
-          value={value}
-          onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
-          placeholder={placeholder ?? "0"}
-        />
-      </div>
-    );
-  }
+  const r = modo === "base" ? null : null; // usamos rBase / rLiq directamente
 
   return (
     <main className="min-h-screen bg-paper">
@@ -208,14 +241,34 @@ export default function LiquidacionPage() {
             Liquidación de sueldo
           </h1>
           <p className="text-ink-muted leading-relaxed max-w-xl">
-            Sueldo líquido, descuentos legales y aportes del empleador a Previred.
-            Resultado en tiempo real.
+            Sueldo líquido, descuentos legales y aportes del empleador a Previred. Resultado en tiempo real.
           </p>
         </div>
       </div>
 
       {/* Body */}
       <div className="max-w-5xl mx-auto px-6 pb-24">
+
+        {/* Selector de modo */}
+        <div className="flex gap-1 bg-gray-100 rounded-2xl p-1 mb-6 w-fit">
+          {([
+            { key: "base",    label: "Desde sueldo base" },
+            { key: "liquido", label: "Desde líquido pactado" },
+          ] as const).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setModo(key)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                modo === key
+                  ? "bg-white text-ink shadow-sm"
+                  : "text-ink-muted hover:text-ink"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 items-start">
 
           {/* ── Inputs ── */}
@@ -223,24 +276,38 @@ export default function LiquidacionPage() {
 
             {/* Remuneración */}
             <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-              <p className="text-sm font-semibold text-ink mb-4">Remuneración</p>
+              <p className="text-sm font-semibold text-ink mb-4">
+                {modo === "base" ? "Remuneración" : "Liquidación objetivo"}
+              </p>
               <div className="space-y-4">
 
-                <div>
-                  <label className={labelCls}>Sueldo base (imponible)</label>
-                  <MoneyInput value={sueldoRaw} onChange={setSueldoRaw} placeholder="700000" />
-                  {sueldoBase > 0 && sueldoBase < IMM && (
-                    <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1.5">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 3.5L20.5 19h-17L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
-                      Por debajo del IMM ({clp(IMM)})
+                {modo === "base" ? (
+                  <div>
+                    <label className={labelCls}>Sueldo base (imponible)</label>
+                    <MoneyInput value={sueldoRaw} onChange={setSueldoRaw} placeholder="700000" />
+                    {sueldoBase > 0 && sueldoBase < IMM && (
+                      <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1.5">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 3.5L20.5 19h-17L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
+                        Por debajo del IMM ({clp(IMM)})
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <label className={labelCls}>Líquido a pagar</label>
+                    <MoneyInput value={liquidoRaw} onChange={setLiquidoRaw} placeholder="600000" />
+                    <p className="text-xs text-ink-light mt-1.5 leading-relaxed bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                      Ingresa el monto total que recibirá la trabajadora, <strong>incluyendo</strong> movilización y colación. El sistema descontará esos haberes antes de calcular el imponible.
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="h-px bg-gray-100" />
-                <p className="text-xs font-medium text-ink-muted">Haberes no imponibles</p>
-                <p className="text-[11px] text-ink-light -mt-2 leading-relaxed">
-                  No afectan las cotizaciones. Se suman al bruto sin generar descuentos.
+                <p className="text-xs font-medium text-ink-muted">
+                  Haberes no imponibles{" "}
+                  <span className="font-normal text-ink-light">
+                    {modo === "liquido" ? "— incluidos en el líquido pactado" : ""}
+                  </span>
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -249,7 +316,7 @@ export default function LiquidacionPage() {
                     <MoneyInput value={movilizacionRaw} onChange={setMovilizacionRaw} placeholder="0" />
                   </div>
                   <div>
-                    <label className={labelCls}>Colación alimentaria</label>
+                    <label className={labelCls}>Colación</label>
                     <MoneyInput value={colacionRaw} onChange={setColacionRaw} placeholder="0" />
                   </div>
                 </div>
@@ -261,7 +328,6 @@ export default function LiquidacionPage() {
             <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
               <p className="text-sm font-semibold text-ink mb-4">Previsión</p>
               <div className="space-y-4">
-
                 <div>
                   <label className={labelCls}>AFP</label>
                   <select className={inputCls} value={afpIdx} onChange={(e) => setAfpIdx(Number(e.target.value))}>
@@ -275,12 +341,10 @@ export default function LiquidacionPage() {
                     10% cuenta individual + {AFPS[afpIdx].comision}% comisión AFP
                   </p>
                 </div>
-
                 <div className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-100 rounded-xl">
                   <p className="text-sm text-ink">Salud</p>
                   <span className="text-sm font-medium text-ink-muted">Fonasa — 7% del imponible</span>
                 </div>
-
               </div>
             </div>
 
@@ -303,54 +367,81 @@ export default function LiquidacionPage() {
                 </div>
               </div>
               <input
-                type="range"
-                min={1} max={30} value={dias}
+                type="range" min={1} max={30} value={dias}
                 onChange={(e) => setDias(Number(e.target.value))}
                 className="w-full accent-brand-600"
               />
               <div className="flex justify-between text-xs text-ink-light mt-1">
                 <span>1 día</span>
-                <span className="font-medium text-brand-600">{dias === 30 ? "Mes completo" : `${dias} días (${Math.round((dias / 30) * 100)}%)`}</span>
+                <span className="font-medium text-brand-600">
+                  {dias === 30 ? "Mes completo" : `${dias} días (${Math.round((dias / 30) * 100)}%)`}
+                </span>
                 <span>30 días</span>
               </div>
             </div>
 
             <p className="text-xs text-ink-light leading-relaxed px-1">
               Valores referenciales. IMM: {clp(IMM)} · Tope imponible: {clp(TOPE_IMPONIBLE)}.
-              Tasas de Previred vigentes a marzo 2026 — verificar antes de emitir liquidaciones oficiales.
+              Tasas Previred vigentes a marzo 2026 — verificar antes de emitir liquidaciones oficiales.
             </p>
           </div>
 
           {/* ── Resultados sticky ── */}
           <div className="lg:sticky lg:top-24 space-y-3">
 
+            {modo === "liquido" && (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <p className="text-xs font-semibold text-amber-800 mb-1">Sueldo base requerido</p>
+                <p className="text-2xl font-light text-amber-900" style={{ fontFamily: "var(--font-fraunces)" }}>
+                  {clp(rLiq.sueldoBaseMensual)}
+                  <span className="text-sm font-normal text-amber-700 ml-2">/mes</span>
+                </p>
+                <p className="text-xs text-amber-700 mt-1">
+                  Este es el imponible mensual a pactar en el contrato
+                  {rLiq.topeAplicado && " — supera el tope imponible"}
+                </p>
+              </div>
+            )}
+
             {/* Haberes */}
             <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
               <p className="text-[11px] font-semibold text-ink-light uppercase tracking-widest mb-4">Haberes</p>
               <div className="space-y-3">
-                <Row label="Sueldo base (imponible)" value={clp(r.sueldoImponible)}
-                  sub={r.topeAplicado ? `Tope legal aplicado (${clp(TOPE_IMPONIBLE)}/mes)` : undefined} />
-                {r.movilizacionProp > 0 && (
-                  <Row label="Movilización" value={clp(r.movilizacionProp)} muted />
+                {modo === "base" ? (
+                  <Row label="Sueldo base (imponible)" value={clp(rBase.sueldoImponible)}
+                    sub={rBase.topeAplicado ? `Tope legal aplicado (${clp(TOPE_IMPONIBLE)}/mes)` : undefined} />
+                ) : (
+                  <Row label="Sueldo imponible (proporcional)" value={clp(rLiq.sueldoImponible)}
+                    sub={rLiq.topeAplicado ? `Supera tope (${clp(TOPE_IMPONIBLE)}/mes)` : undefined} />
                 )}
-                {r.colacionProp > 0 && (
-                  <Row label="Colación alimentaria" value={clp(r.colacionProp)} muted />
+                {(modo === "base" ? rBase.movilizacionProp : rLiq.movilizacionProp) > 0 && (
+                  <Row label="Movilización" value={clp(modo === "base" ? rBase.movilizacionProp : rLiq.movilizacionProp)} muted />
+                )}
+                {(modo === "base" ? rBase.colacionProp : rLiq.colacionProp) > 0 && (
+                  <Row label="Colación" value={clp(modo === "base" ? rBase.colacionProp : rLiq.colacionProp)} muted />
                 )}
                 <div className="h-px bg-gray-100" />
-                <Row label="Sueldo bruto" value={clp(r.bruto)} bold />
+                <Row label="Sueldo bruto" value={clp(modo === "base" ? rBase.bruto : rLiq.bruto)} bold />
               </div>
             </div>
 
-            {/* Descuentos trabajador */}
+            {/* Descuentos */}
             <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
               <p className="text-[11px] font-semibold text-ink-light uppercase tracking-widest mb-4">
                 Descuentos del trabajador
               </p>
               <div className="space-y-3">
-                <Row label={`${r.afpNombre} (${r.tasaAfp.toFixed(2)}%)`} value={`−${clp(r.descAfp)}`} negative />
-                <Row label="Fonasa (7%)" value={`−${clp(r.descSalud)}`} negative />
-                <div className="h-px bg-gray-100" />
-                <Row label="Total descuentos" value={`−${clp(r.totalDesc)}`} bold negative />
+                {(() => {
+                  const x = modo === "base" ? rBase : rLiq;
+                  return (
+                    <>
+                      <Row label={`${x.afpNombre} (${x.tasaAfp.toFixed(2)}%)`} value={`−${clp(x.descAfp)}`} negative />
+                      <Row label="Fonasa (7%)" value={`−${clp(x.descSalud)}`} negative />
+                      <div className="h-px bg-gray-100" />
+                      <Row label="Total descuentos" value={`−${clp(x.totalDesc)}`} bold negative />
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -360,7 +451,7 @@ export default function LiquidacionPage() {
                 Sueldo líquido
               </p>
               <p className="text-5xl font-light text-white mb-1" style={{ fontFamily: "var(--font-fraunces)" }}>
-                {clp(r.liquido)}
+                {clp(modo === "base" ? rBase.liquido : rLiq.liquidoReal)}
               </p>
               <p className="text-sm text-brand-200">Lo que recibe la trabajadora</p>
             </div>
@@ -373,15 +464,20 @@ export default function LiquidacionPage() {
               <p className="text-[11px] text-ink-light mb-4 leading-relaxed">
                 Pagados directamente por el empleador. No se descuentan del sueldo de la trabajadora.
               </p>
-              <div className="space-y-3">
-                <Row label={`SIS — Seg. Invalidez y Sobrevivencia (${pct(TASAS_EMP.sis)})`}      value={clp(r.sis)} />
-                <Row label={`AFC Seg. Cesantía TCP (${pct(TASAS_EMP.afcTcp)}: 2,2% + 0,8%)`}     value={clp(r.afcTcp)} />
-                <Row label={`Mutual Acc. Trabajo y Enf. Prof. (${pct(TASAS_EMP.mutual)})`}        value={clp(r.mutual)} />
-                <Row label={`Cot. adicional empleador (${pct(TASAS_EMP.cotAdicional)}: 0,9%+0,1%)`} value={clp(r.cotAdicional)} />
-                <Row label={`Indem. a todo evento TCP (${pct(TASAS_EMP.indemnizacion)} — AFC Chile)`} value={clp(r.indem)} />
-                <div className="h-px bg-gray-100" />
-                <Row label="Total aportes empleador" value={clp(r.totalEmp)} bold />
-              </div>
+              {(() => {
+                const x = modo === "base" ? rBase : rLiq;
+                return (
+                  <div className="space-y-3">
+                    <Row label={`SIS — Seg. Invalidez y Sobrevivencia (${pct(TASAS_EMP.sis)})`}       value={clp(x.sis)} />
+                    <Row label={`AFC Seg. Cesantía TCP (${pct(TASAS_EMP.afcTcp)}: 2,2%+0,8%)`}        value={clp(x.afcTcp)} />
+                    <Row label={`Mutual Acc. Trabajo y Enf. Prof. (${pct(TASAS_EMP.mutual)})`}         value={clp(x.mutual)} />
+                    <Row label={`Cot. adicional empleador (${pct(TASAS_EMP.cotAdicional)}: 0,9%+0,1%)`} value={clp(x.cotAdicional)} />
+                    <Row label={`Indem. a todo evento TCP (${pct(TASAS_EMP.indemnizacion)} — AFC Chile)`} value={clp(x.indem)} />
+                    <div className="h-px bg-gray-100" />
+                    <Row label="Total aportes empleador" value={clp(x.totalEmp)} bold />
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Costo total */}
@@ -390,7 +486,7 @@ export default function LiquidacionPage() {
                 Costo total de la relación laboral
               </p>
               <p className="text-3xl font-light text-brand-800" style={{ fontFamily: "var(--font-fraunces)" }}>
-                {clp(r.costoTotal)}
+                {clp(modo === "base" ? rBase.costoTotal : rLiq.costoTotal)}
               </p>
               <p className="text-xs text-brand-600 mt-1">Sueldo bruto + aportes empleador</p>
             </div>
