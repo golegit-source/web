@@ -48,13 +48,13 @@ export default function Navbar() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8">
           <a
-            href="#como-funciona"
+            href="/#como-funciona"
             className="text-sm text-ink-muted hover:text-ink transition-colors"
           >
             Cómo funciona
           </a>
           <a
-            href="#precios"
+            href="/#precios"
             className="text-sm text-ink-muted hover:text-ink transition-colors"
           >
             Precios
@@ -100,13 +100,13 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-paper border-t border-ink/5 px-6 py-4 flex flex-col gap-4">
-          <a href="#como-funciona" className="text-sm text-ink-muted" onClick={() => setMenuOpen(false)}>
+          <a href="/#como-funciona" className="text-sm text-ink-muted" onClick={() => setMenuOpen(false)}>
             Cómo funciona
           </a>
-          <a href="#precios" className="text-sm text-ink-muted" onClick={() => setMenuOpen(false)}>
+          <a href="/#precios" className="text-sm text-ink-muted" onClick={() => setMenuOpen(false)}>
             Precios
           </a>
-          <a href="#faq" className="text-sm text-ink-muted" onClick={() => setMenuOpen(false)}>
+          <a href="/#faq" className="text-sm text-ink-muted" onClick={() => setMenuOpen(false)}>
             Preguntas frecuentes
           </a>
           <Link href="/simulador" className="text-sm text-ink-muted" onClick={() => setMenuOpen(false)}>

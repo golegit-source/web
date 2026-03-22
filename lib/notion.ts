@@ -53,9 +53,15 @@ function pageToPost(page: any): Post {
   let portada: string | null = null;
   if (page.cover?.type === "external") portada = page.cover.external.url;
   else if (page.cover?.type === "file") portada = page.cover.file.url;
-  const imgProp = props["Imagen"]?.files?.[0];
-  if (!portada && imgProp) {
-    portada = imgProp.type === "external" ? imgProp.external.url : imgProp.file?.url ?? null;
+  if (!portada) {
+    // Soporta columna tipo "url" o tipo "files"
+    const imgProp = props["Imagen"];
+    if (imgProp?.type === "url") {
+      portada = imgProp.url ?? null;
+    } else if (imgProp?.files?.[0]) {
+      const f = imgProp.files[0];
+      portada = f.type === "external" ? f.external.url : f.file?.url ?? null;
+    }
   }
 
   return { id: page.id, slug: slugRaw, titulo, resumen, categoria, fecha, portada };
@@ -90,27 +96,32 @@ export async function getPosts(categoria?: string): Promise<Post[]> {
 export async function getPost(slug: string): Promise<Post | null> {
   if (!DB_ID) return null;
 
-  // Buscar primero por propiedad Slug
-  const bySlug = await notion.databases.query({
-    database_id: DB_ID,
-    filter: { property: "Slug", rich_text: { equals: slug } },
-  });
+  try {
+    // Buscar primero por propiedad Slug
+    const bySlug = await notion.databases.query({
+      database_id: DB_ID,
+      filter: { property: "Slug", rich_text: { equals: slug } },
+    });
 
-  if (bySlug.results.length > 0 && isFullPage(bySlug.results[0])) {
-    return pageToPost(bySlug.results[0]);
+    if (bySlug.results.length > 0 && isFullPage(bySlug.results[0])) {
+      return pageToPost(bySlug.results[0]);
+    }
+
+    // Fallback: buscar por ID (slug = page ID sin guiones)
+    const allRes = await notion.databases.query({
+      database_id: DB_ID,
+      filter: { property: "Publicado", checkbox: { equals: true } },
+    });
+
+    const match = allRes.results
+      .filter(isFullPage)
+      .find((p: { id: string }) => p.id.replace(/-/g, "") === slug);
+
+    return match ? pageToPost(match) : null;
+  } catch (err) {
+    console.error("[Notion] getPost error:", err);
+    return null;
   }
-
-  // Fallback: buscar por ID (slug = page ID sin guiones)
-  const allRes = await notion.databases.query({
-    database_id: DB_ID,
-    filter: { property: "Publicado", checkbox: { equals: true } },
-  });
-
-  const match = allRes.results
-    .filter(isFullPage)
-    .find((p: { id: string }) => p.id.replace(/-/g, "") === slug);
-
-  return match ? pageToPost(match) : null;
 }
 
 export async function getPostById(id: string): Promise<Post | null> {
@@ -125,18 +136,23 @@ export async function getPostById(id: string): Promise<Post | null> {
 }
 
 export async function getBlocks(pageId: string): Promise<Block[]> {
+  if (!process.env.NOTION_TOKEN) return [];
   const blocks: Block[] = [];
   let cursor: string | undefined;
 
-  do {
-    const res = await notion.blocks.children.list({
-      block_id: pageId,
-      start_cursor: cursor,
-      page_size: 100,
-    });
-    blocks.push(...(res.results as Block[]));
-    cursor = res.has_more ? (res.next_cursor ?? undefined) : undefined;
-  } while (cursor);
+  try {
+    do {
+      const res = await notion.blocks.children.list({
+        block_id: pageId,
+        start_cursor: cursor,
+        page_size: 100,
+      });
+      blocks.push(...(res.results as Block[]));
+      cursor = res.has_more ? (res.next_cursor ?? undefined) : undefined;
+    } while (cursor);
+  } catch (err) {
+    console.error("[Notion] getBlocks error:", err);
+  }
 
   return blocks;
 }
