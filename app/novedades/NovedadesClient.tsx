@@ -4,23 +4,55 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import type { Post } from "@/lib/notion";
 
+// ── Utilidades definidas aquí (no pueden pasarse como props desde Server Component) ──
+
+const CATEGORIA_COLORS: Record<string, string> = {
+  Laboral:        "bg-blue-50   text-blue-700   border-blue-200",
+  Remuneraciones: "bg-green-50  text-green-700  border-green-200",
+  Contratos:      "bg-purple-50 text-purple-700 border-purple-200",
+  Previsión:      "bg-amber-50  text-amber-700  border-amber-200",
+  General:        "bg-gray-50   text-gray-600   border-gray-200",
+  Novedades:      "bg-brand-50  text-brand-700  border-brand-200",
+};
+
+export function categoriaColor(cat: string) {
+  return CATEGORIA_COLORS[cat] ?? "bg-gray-50 text-gray-600 border-gray-200";
+}
+
+export function formatFecha(iso: string) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  return `${parseInt(d)} ${meses[parseInt(m) - 1]} ${y}`;
+}
+
+function CoverPlaceholder({ categoria }: { categoria: string }) {
+  const colors: Record<string, string> = {
+    Laboral: "#3b82f6", Remuneraciones: "#16a34a",
+    Contratos: "#9333ea", Previsión: "#f59e0b",
+    General: "#6b7280", Novedades: "#16a34a",
+  };
+  const color = colors[categoria] ?? "#16a34a";
+  return (
+    <div className="w-full h-full flex items-center justify-center"
+      style={{ background: `linear-gradient(135deg, ${color}18 0%, ${color}08 100%)` }}>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" opacity="0.5">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+      </svg>
+    </div>
+  );
+}
+
+// ── Componente principal ──
+
 interface Props {
   posts: Post[];
   categorias: string[];
   categoriaActiva: string;
-  categoriaColor: (cat: string) => string;
-  formatFecha: (iso: string) => string;
-  CoverPlaceholder: React.ComponentType<{ categoria: string }>;
 }
 
-export default function NovedadesClient({
-  posts,
-  categorias,
-  categoriaActiva,
-  categoriaColor,
-  formatFecha,
-  CoverPlaceholder,
-}: Props) {
+export default function NovedadesClient({ posts, categorias, categoriaActiva }: Props) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -38,7 +70,7 @@ export default function NovedadesClient({
             key={cat}
             onClick={() => setCategoria(cat)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
-              categoriaActiva === cat || (cat === "Todas" && !categorias.includes(categoriaActiva) && categoriaActiva === "Todas")
+              categoriaActiva === cat
                 ? "bg-brand-600 text-white border-brand-600 shadow-sm"
                 : "bg-white text-ink-muted border-gray-200 hover:border-gray-300 hover:text-ink"
             }`}
@@ -77,7 +109,6 @@ export default function NovedadesClient({
 
               {/* Contenido */}
               <div className="flex flex-col flex-1 p-5">
-                {/* Meta */}
                 <div className="flex items-center gap-2 mb-3">
                   <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${categoriaColor(post.categoria)}`}>
                     {post.categoria}
@@ -87,19 +118,16 @@ export default function NovedadesClient({
                   )}
                 </div>
 
-                {/* Título */}
                 <h2 className="text-sm font-semibold text-ink leading-snug mb-2 line-clamp-2 group-hover:text-brand-700 transition-colors">
                   {post.titulo}
                 </h2>
 
-                {/* Resumen */}
                 {post.resumen && (
                   <p className="text-xs text-ink-muted leading-relaxed line-clamp-3 flex-1">
                     {post.resumen}
                   </p>
                 )}
 
-                {/* CTA */}
                 <div className="mt-4 flex items-center gap-1 text-xs font-medium text-brand-700 group-hover:gap-2 transition-all">
                   Leer más
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

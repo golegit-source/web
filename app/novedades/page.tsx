@@ -2,56 +2,15 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getPosts, getCategories } from "@/lib/notion";
-import NovedadesClient from "./NovedadesClient";
+import NovedadesClient, { categoriaColor, formatFecha } from "./NovedadesClient";
 
-export const revalidate = 3600; // Revalida cada hora
+export const revalidate = 3600;
 
 export const metadata = {
   title: "Novedades — GoLegit",
   description:
     "Alertas laborales, novedades en remuneraciones y actualizaciones legales para empleadores de trabajadoras de casa particular.",
 };
-
-const CATEGORIA_COLORS: Record<string, string> = {
-  Laboral:       "bg-blue-50  text-blue-700  border-blue-200",
-  Remuneraciones:"bg-green-50 text-green-700 border-green-200",
-  Contratos:     "bg-purple-50 text-purple-700 border-purple-200",
-  Previsión:     "bg-amber-50 text-amber-700 border-amber-200",
-  General:       "bg-gray-50  text-gray-600  border-gray-200",
-  Novedades:     "bg-brand-50 text-brand-700 border-brand-200",
-};
-
-export function categoriaColor(cat: string) {
-  return CATEGORIA_COLORS[cat] ?? "bg-gray-50 text-gray-600 border-gray-200";
-}
-
-function formatFecha(iso: string) {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-");
-  const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  return `${parseInt(d)} ${meses[parseInt(m) - 1]} ${y}`;
-}
-
-// Placeholder SVG cuando no hay imagen
-function CoverPlaceholder({ categoria }: { categoria: string }) {
-  const colors: Record<string, string> = {
-    Laboral: "#3b82f6", Remuneraciones: "#16a34a",
-    Contratos: "#9333ea", Previsión: "#f59e0b",
-    General: "#6b7280", Novedades: "#16a34a",
-  };
-  const color = colors[categoria] ?? "#16a34a";
-  return (
-    <div className="w-full h-full flex items-center justify-center"
-      style={{ background: `linear-gradient(135deg, ${color}18 0%, ${color}08 100%)` }}>
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" opacity="0.5">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-        <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
-      </svg>
-    </div>
-  );
-}
-
-export { formatFecha, CoverPlaceholder };
 
 export default async function NovedadesPage({
   searchParams,
@@ -61,7 +20,6 @@ export default async function NovedadesPage({
   const { cat } = await searchParams;
   const categoria = cat && cat !== "Todas" ? cat : undefined;
 
-  // Si no hay env vars configuradas, mostrar aviso
   if (!process.env.NOTION_TOKEN || !process.env.NOTION_DB_ID) {
     return (
       <main className="min-h-screen bg-paper">
@@ -76,10 +34,13 @@ export default async function NovedadesPage({
           <h1 className="text-2xl font-light text-ink mb-3" style={{ fontFamily: "var(--font-fraunces)" }}>
             CMS no configurado
           </h1>
-          <p className="text-ink-muted mb-6 leading-relaxed max-w-md mx-auto">
-            Agrega las variables de entorno <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm">NOTION_TOKEN</code> y{" "}
-            <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm">NOTION_DB_ID</code> para conectar con Notion.
+          <p className="text-ink-muted mb-2 leading-relaxed max-w-md mx-auto">
+            Agrega las variables de entorno en Vercel para conectar con Notion:
           </p>
+          <code className="block bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-left max-w-sm mx-auto mb-6">
+            NOTION_TOKEN=secret_...<br/>
+            NOTION_DB_ID=b844dffae5ca4ee8983d5ee3d098a70b
+          </code>
           <Link href="/" className="text-sm text-brand-700 hover:text-brand-800 underline">
             ← Volver al inicio
           </Link>
@@ -122,15 +83,11 @@ export default async function NovedadesPage({
         </div>
       </section>
 
-      {/* Filtros + listado */}
       <section className="max-w-5xl mx-auto px-6 pb-28">
         <NovedadesClient
           posts={posts}
           categorias={categorias}
           categoriaActiva={cat ?? "Todas"}
-          categoriaColor={categoriaColor}
-          formatFecha={formatFecha}
-          CoverPlaceholder={CoverPlaceholder}
         />
       </section>
 

@@ -3,17 +3,16 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BlockRenderer from "@/components/notion/BlockRenderer";
-import { getPost, getBlocks, getPosts } from "@/lib/notion";
-import { categoriaColor, formatFecha, CoverPlaceholder } from "../page";
+import { getPost, getBlocks } from "@/lib/notion";
+import { categoriaColor, formatFecha } from "../NovedadesClient";
 import { SITE_CONFIG } from "@/lib/config";
 
 export const revalidate = 3600;
+export const dynamicParams = true;
 
-// Genera rutas estáticas en build
+// No pre-renderizamos en build — las páginas se generan on-demand (ISR)
 export async function generateStaticParams() {
-  if (!process.env.NOTION_TOKEN || !process.env.NOTION_DB_ID) return [];
-  const posts = await getPosts();
-  return posts.map((p) => ({ slug: p.slug }));
+  return [];
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -88,8 +87,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         </div>
       ) : (
         <div className="max-w-3xl mx-auto px-6 mb-12">
-          <div className="w-full h-48 rounded-2xl overflow-hidden">
-            <CoverPlaceholder categoria={post.categoria} />
+          <div className="w-full h-48 rounded-2xl overflow-hidden bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="1.2" opacity="0.4">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+            </svg>
           </div>
         </div>
       )}
