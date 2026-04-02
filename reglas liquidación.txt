@@ -1,0 +1,442 @@
+# Reglas de Cálculo — Liquidación de Sueldo TCP
+
+**Plataforma:** GoLegit
+**Aplica a:** Trabajadores de Casa Particular (TCP), Chile
+**Marco legal principal:** Ley 20.786, Código del Trabajo
+**Última actualización:** Marzo 2026
+
+---
+
+## 1. Estructura general de una liquidación
+
+Una liquidación tiene tres secciones:
+
+| Sección | Quién la paga | Qué incluye |
+|---------|--------------|-------------|
+| **Haberes** | — | Todo lo que gana la trabajadora |
+| **Descuentos previsionales** | Trabajadora (retención) | AFP + Salud |
+| **Aportes empleador** | Empleador (costo propio) | SIS, AFC, Mutual, Cot. Adicional, Indem. |
+
+> **Importante:** Los descuentos previsionales son **retenciones**. El empleador los descuenta del sueldo de la trabajadora y los deposita en Previred junto con sus propios aportes. No son un gasto del empleador — el dinero ya estaba en el sueldo.
+
+---
+
+## 2. Parámetros del sistema
+
+Todos los valores numéricos se obtienen de la tabla `parametros_legales`. Los valores actuales son:
+
+| Parámetro | Valor vigente | Notas |
+|-----------|--------------|-------|
+| `ingreso_minimo_mensual` | $539.000 | Se actualiza cada julio |
+| `tope_imponible_afp` | $3.467.173 | Tope sobre el que se aplican cotizaciones |
+| `uf_valor` | Variable diaria | Pendiente: conectar a API automática (CMF/mindicador.cl) |
+| `tasa_sis` | 1,54% | Seguro de Invalidez y Sobrevivencia |
+| `tasa_mutual_accidentes` | 0,90% | Acc. del Trabajo y Enf. Profesionales |
+| `tasa_mutual_ley_sanna` | 0,03% | Ley SANNA |
+| `tasa_afc_empleador_cuenta_individual` | 2,20% | AFC cuenta individual |
+| `tasa_afc_empleador_fondo_solidario` | 0,80% | AFC fondo solidario |
+| `tasa_cot_adicional_seguro_social` | 0,90% | Cotización adicional seguro social |
+| `tasa_cot_adicional_cuenta_individual` | 0,10% | Cotización adicional cuenta individual |
+| `tasa_indemnizacion_tcp` | 1,11% | Indemnización a todo evento TCP en AFC Chile |
+
+Las tasas AFP (cotización obligatoria + comisión) vienen de la tabla `afps`.
+
+---
+
+## 3. Haberes imponibles
+
+Los haberes imponibles son la base sobre la que se calculan todas las cotizaciones previsionales.
+
+### 3.1 Sueldo base
+
+- Es el sueldo mensual pactado en el contrato.
+- Siempre corresponde al **imponible** (no al líquido), independientemente de la modalidad de cálculo.
+- Mínimo legal: proporcional al ingreso mínimo mensual según las horas semanales pactadas.
+
+```
+IMM proporcional = round(ingreso_minimo_mensual × horas_semanales / 44)
+```
+
+Si `sueldo_base < IMM_proporcional` → se muestra alerta en la liquidación (no bloquea).
+
+### 3.2 Horas extraordinarias
+
+Solo aplica cuando la trabajadora trabajó más horas de las pactadas. Se calcula sobre la **jornada pactada** en el contrato.
+
+```
+valor_hora       = (sueldo_base / 30 × 28) / (horas_semanales × 4)
+horas_extra_monto = round(cantidad_horas_extra × valor_hora × 1,5)
+```
+
+> El factor `28/30` convierte días mensuales a días hábiles efectivos (4 semanas × 7 días).
+> El recargo de 50% (×1,5) es el mínimo legal — Art. 32 CT.
+> Aplica tanto a TCP puertas adentro como puertas afuera.
+
+### 3.3 Bono imponible
+
+Monto adicional acordado que sí cotiza. Se suma al total imponible.
+
+### 3.4 Total imponible
+
+```
+total_imponible = min(sueldo_base + horas_extra_monto + bono_imponible, tope_imponible_afp)
+```
+
+El tope imponible es el máximo sobre el que se aplican cotizaciones AFP. Montos por encima del tope no cotizan.
+
+---
+
+## 4. Haberes no imponibles
+
+No generan cotizaciones previsionales. Se suman a los haberes imponibles para calcular el total haberes.
+
+| Haber | Descripción |
+|-------|-------------|
+| Asignación de colación | Monto mensual para alimentación |
+| Asignación de movilización | Monto mensual para transporte |
+| Viáticos | Gastos por desplazamiento (si aplica) |
+
+```
+total_no_imponible = asig_colacion + asig_movilizacion + viaticos
+total_haberes      = total_imponible + total_no_imponible
+```
+
+> **TCP:** No aplica semana corrida ni gratificación legal (Ley 20.786).
+
+---
+
+## 5. Descuentos previsionales (cargo trabajadora)
+
+### 5.1 AFP
+
+Cada trabajadora está afiliada a una AFP. El descuento total es la cotización obligatoria más la comisión de la AFP.
+
+```
+descuento_afp_obligatorio = round(total_imponible × 0,10)
+descuento_comision_afp    = round(total_imponible × comision_afp)
+descuento_afp_total       = descuento_afp_obligatorio + descuento_comision_afp
+```
+
+**Comisiones vigentes por AFP** (se actualizan periódicamente):
+
+| AFP | Comisión dependiente |
+|-----|---------------------|
+| Capital | 1,44% |
+| Cuprum | 1,44% |
+| Hábitat | 1,27% |
+| PlanVital | 1,16% |
+| ProVida | 1,45% |
+| Modelo | 0,58% |
+| Uno | 0,49% |
+
+### 5.2 Salud
+
+La retención de salud de la trabajadora es **siempre el 7% del total imponible**, independientemente del sistema de salud.
+
+```
+retencion_salud_trabajadora = round(total_imponible × 0,07)
+```
+
+La diferencia entre el costo real del plan y el 7% retenido puede ser cargo de la trabajadora o del empleador, según lo pactado.
+
+#### Caso A — Fonasa
+
+```
+descuento_salud = round(total_imponible × 0,07)
+```
+
+No hay plan adicional. El empleador remite el 7% retenido a Fonasa.
+
+#### Caso B — Isapre, exceso a cargo de la trabajadora (`isapre_empleador_paga_total = false`)
+
+La trabajadora paga el costo total del plan en UF. Si el plan cuesta más que el 7% del imponible, la diferencia se descuenta de su sueldo.
+
+```
+plan_pesos      = round(plan_uf × uf_valor)
+descuento_salud = plan_pesos        ← se descuenta el plan completo
+```
+
+> **Nota:** Si el plan cuesta menos que el 7%, la diferencia queda en poder del empleador (caso inusual).
+
+#### Caso C — Isapre, exceso a cargo del empleador (`isapre_empleador_paga_total = true`)
+
+La trabajadora retiene solo el 7% legal. El empleador asume la diferencia entre el plan y el 7% como costo propio adicional.
+
+```
+retencion_trabajadora      = round(total_imponible × 0,07)
+aporte_empleador_isapre    = max(0, plan_pesos − retencion_trabajadora)
+total_previred_isapre      = plan_pesos
+```
+
+**Ejemplo** — sueldo base $734.125, plan 3 UF = $119.525:
+- Retención trabajadora: 7% × $734.125 = **$51.389**
+- Aporte empleador (diferencia): $119.525 − $51.389 = **$68.136**
+- Total remitido a Previred por isapre: **$119.525**
+
+### 5.3 Total descuentos y sueldo líquido
+
+```
+total_descuentos = descuento_afp_total + retencion_salud_trabajadora
+sueldo_liquido   = total_haberes − total_descuentos
+```
+
+---
+
+## 6. Aportes empleador (Previred)
+
+Estos son costos propios del empleador — **no se descuentan del sueldo de la trabajadora**. Se incluyen en la liquidación como referencia para que el empleador sepa cuánto debe pagar en Previred.
+
+### 6.1 SIS — Seguro de Invalidez y Sobrevivencia
+
+```
+aporte_sis = round(total_imponible × 0,0154)
+```
+
+### 6.2 AFC — Seguro de Cesantía TCP
+
+```
+aporte_afc_cuenta_individual  = round(total_imponible × 0,022)
+aporte_afc_fondo_solidario    = round(total_imponible × 0,008)
+aporte_afc_total              = aporte_afc_cuenta_individual + aporte_afc_fondo_solidario
+                              = round(total_imponible × 0,03)
+```
+
+### 6.3 Mutual — Accidentes del Trabajo y Enfermedades Profesionales
+
+```
+aporte_mutual_accidentes = round(total_imponible × 0,0090)
+aporte_mutual_ley_sanna  = round(total_imponible × 0,0003)
+aporte_mutual_total      = aporte_mutual_accidentes + aporte_mutual_ley_sanna
+                         = round(total_imponible × 0,0093)
+```
+
+### 6.4 Cotización adicional empleador
+
+```
+aporte_cot_adic_seguro_social    = round(total_imponible × 0,009)
+aporte_cot_adic_cuenta_individual = round(total_imponible × 0,001)
+aporte_cot_adic_total             = round(total_imponible × 0,01)
+```
+
+### 6.5 Indemnización a todo evento TCP
+
+Exclusiva de TCP. Se deposita en AFC Chile en una cuenta individual de la trabajadora.
+
+```
+aporte_indemnizacion_tcp = round(sueldo_base × 0,0111)
+```
+
+> Se calcula sobre el **sueldo base**, no sobre el total imponible.
+> Base legal: Art. 163 bis CT + Ley 20.786.
+
+### 6.6 Isapre — aporte empleador por exceso (solo Caso C)
+
+Solo cuando `isapre_empleador_paga_total = true`:
+
+```
+aporte_empleador_isapre = max(0, plan_pesos − round(total_imponible × 0,07))
+```
+
+Este monto **no está incluido en `total_costo_empleador`** del registro de remuneraciones — se suma solo en la liquidación PDF para mostrar el costo real total.
+
+### 6.7 Resumen de tasas empleador
+
+| Concepto | Base | Tasa | Mínimo legal |
+|----------|------|------|-------------|
+| SIS | Total imponible | 1,54% | Sí |
+| AFC cuenta individual | Total imponible | 2,20% | Sí |
+| AFC fondo solidario | Total imponible | 0,80% | Sí |
+| Mutual accidentes | Total imponible | 0,90% | Sí |
+| Mutual Ley SANNA | Total imponible | 0,03% | Sí |
+| Cotización adicional seg. social | Total imponible | 0,90% | Sí |
+| Cotización adicional cuenta ind. | Total imponible | 0,10% | Sí |
+| Indemnización a todo evento | Sueldo base | 1,11% | Sí (TCP) |
+| Isapre exceso | plan_pesos − 7% | variable | No (voluntario) |
+
+**Costo empleador total (sin isapre voluntario):**
+```
+total_costo_empleador = aporte_sis + aporte_afc_total + aporte_mutual_total
+                      + aporte_cot_adic_total + aporte_indemnizacion_tcp
+```
+
+---
+
+## 7. Total Previred
+
+Es la suma total que el empleador debe pagar en Previred cada mes: retenciones de la trabajadora más aportes propios.
+
+```
+total_previred = total_descuentos_trabajadora + total_costo_empleador [+ aporte_isapre_empleador]
+```
+
+---
+
+## 8. Anticipo y saldo a pagar
+
+Si se pagó un anticipo durante el mes:
+
+```
+saldo_a_pagar = max(sueldo_liquido − anticipo, 0)
+```
+
+---
+
+## 9. Proporcionalidad por ausencias
+
+Solo aplican a los haberes las ausencias con `impacta_sueldo = true`:
+- Faltas injustificadas
+- Permisos sin goce de sueldo
+
+Las licencias médicas, vacaciones y permisos con goce **no afectan el sueldo base**.
+
+```
+dias_habiles         = 30 − dias_ausencia_con_descuento
+sueldo_base_prop     = round(sueldo_base     × dias_habiles / 30)
+asig_colacion_prop   = round(asig_colacion   × dias_habiles / 30)
+asig_movilizacion_prop = round(asig_movilizacion × dias_habiles / 30)
+```
+
+> Se usa base 30 días para todos los meses, independientemente de los días del mes calendario.
+
+Los valores proporcionales reemplazan a los originales antes de enviar a `calcular-liquidacion`. El total imponible y los descuentos se calculan sobre los valores proporcionales.
+
+---
+
+## 10. Modalidades de sueldo
+
+### `desde_base`
+
+El empleador ingresa directamente el sueldo base imponible. Es lo que aparece en el contrato y en la liquidación.
+
+```
+input: sueldo_base
+output: liquidación calculada sobre ese sueldo_base
+```
+
+### `desde_liquido`
+
+El empleador ingresa el líquido deseado. El sistema calcula el sueldo base imponible necesario para que el líquido resultante sea el objetivo.
+
+```
+input: liquido_deseado
+output: sueldo_base = f(liquido_deseado, tasas_afp, tasas_salud)
+```
+
+> **El contrato siempre registra el sueldo base imponible**, no el líquido, aunque la modalidad sea `desde_liquido`.
+
+Cuando hay beneficios (colación, movilización) en modalidad `desde_liquido`, se distingue si están incluidos en el líquido pactado o son adicionales. Si están incluidos, no se suman al cálculo del imponible.
+
+---
+
+## 11. Ejemplo completo
+
+**Datos:**
+- Sueldo base: $734.125
+- AFP: Modelo (comisión 0,58%)
+- Salud: Isapre — Plan 3 UF ($119.525), exceso a cargo del empleador
+- Sin horas extra, sin ausencias, sin anticipo
+- Colación: $50.000, Movilización: $30.000
+- UF usada: $39.841,67
+
+**Haberes:**
+
+| Concepto | Monto |
+|----------|-------|
+| Sueldo base | $734.125 |
+| Total imponible | $734.125 |
+| Asig. colación | $50.000 |
+| Asig. movilización | $30.000 |
+| **Total haberes** | **$814.125** |
+
+**Descuentos trabajadora:**
+
+| Concepto | Cálculo | Monto |
+|----------|---------|-------|
+| AFP Modelo (10%) | $734.125 × 10% | $73.413 |
+| Comisión Modelo (0,58%) | $734.125 × 0,58% | $4.258 |
+| Isapre (retención 7%) | $734.125 × 7% | $51.389 |
+| **Total descuentos** | | **$129.060** |
+
+**Sueldo líquido: $814.125 − $129.060 = $685.065**
+
+**Aportes empleador:**
+
+| Concepto | Cálculo | Monto |
+|----------|---------|-------|
+| SIS (1,54%) | $734.125 × 1,54% | $11.306 |
+| AFC total (3%) | $734.125 × 3% | $22.024 |
+| Mutual (0,93%) | $734.125 × 0,93% | $6.827 |
+| Cot. adicional (1%) | $734.125 × 1% | $7.341 |
+| Indem. a todo evento (1,11%) | $734.125 × 1,11% | $8.149 |
+| Isapre (exceso plan) | $119.525 − $51.389 | $68.136 |
+| **Total aportes empleador** | | **$123.783** |
+
+**Total Previred: $129.060 + $123.783 = $252.843**
+**Costo total empleador este mes: $814.125 + $123.783 = $937.908**
+
+---
+
+## 12. Fórmulas de referencia rápida
+
+```
+// Haberes
+valor_hora           = (sueldo_base / 30 × 28) / (horas_semanales × 4)
+horas_extra_monto    = round(cant_horas × valor_hora × 1,5)
+total_imponible      = min(sueldo_base + horas_extra + bono_imponible, tope_imponible)
+total_no_imponible   = colacion + movilizacion + viaticos
+total_haberes        = total_imponible + total_no_imponible
+
+// Descuentos trabajadora
+afp_obligatorio      = round(total_imponible × 0,10)
+afp_comision         = round(total_imponible × comision_afp)
+retencion_salud      = round(total_imponible × 0,07)      ← siempre 7%
+total_descuentos     = afp_obligatorio + afp_comision + retencion_salud
+sueldo_liquido       = total_haberes − total_descuentos
+
+// Aportes empleador
+aporte_sis           = round(total_imponible × 0,0154)
+aporte_afc           = round(total_imponible × 0,03)
+aporte_mutual        = round(total_imponible × 0,0093)
+aporte_cot_adic      = round(total_imponible × 0,01)
+aporte_indem         = round(sueldo_base × 0,0111)        ← base sueldo_base, no imponible
+aporte_isapre_emp    = max(0, plan_pesos − retencion_salud)  ← solo cuando empleador paga exceso
+
+// Proporcionalidad
+dias_habiles         = 30 − dias_ausencia_con_descuento
+sueldo_base_prop     = round(sueldo_base × dias_habiles / 30)
+colacion_prop        = round(colacion × dias_habiles / 30)
+movilizacion_prop    = round(movilizacion × dias_habiles / 30)
+
+// Cierre
+saldo_a_pagar        = max(sueldo_liquido − anticipo, 0)
+total_previred       = total_descuentos + total_costo_empleador [+ aporte_isapre_emp]
+```
+
+---
+
+## 13. Reglas de negocio especiales TCP
+
+- **Sin semana corrida** — no aplica Art. 45 CT (excluidos por Ley 20.786)
+- **Sin gratificación legal** — no aplica Art. 47 CT
+- **Con horas extra** — aplica Art. 30 CT, tanto puertas adentro como puertas afuera
+- **Indemnización a todo evento** — obligatoria para TCP desde el primer día, a diferencia del régimen general donde empieza al año de servicio
+- **Tope jornada puertas adentro** — 12 horas diarias, máximo 72 semanales (Art. 146 bis CT)
+
+---
+
+## 14. Fuentes legales
+
+| Norma | Contenido relevante |
+|-------|---------------------|
+| Ley 20.786 | Estatuto especial TCP — jornada, remuneración, finiquito |
+| Art. 10 CT | Contenido obligatorio del contrato |
+| Art. 32 CT | Horas extraordinarias y recargo 50% |
+| Art. 146 bis CT | Jornada especial TCP |
+| Art. 163 bis CT | Indemnización a todo evento |
+| DFL N°44 | Licencias médicas — carencia y subsidio |
+| Art. 159, 160, 161 CT | Causales de término del contrato |
+| Ley 21.389 | Registro de Deudores de Pensiones de Alimentos |
+
+---
+
+*Documento generado por Claude Code — GoLegit. Validación legal: Jorge Cubillos.*
