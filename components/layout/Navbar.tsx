@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { SITE_CONFIG } from "@/lib/config";
 import CtaButton from "@/components/CtaButton";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -15,12 +18,15 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Texto blanco solo en home antes de hacer scroll
+  const isDark = isHome && !scrolled;
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/95 backdrop-blur-md border-b border-gray-100"
-          : "bg-transparent"
+        isDark
+          ? "bg-transparent"
+          : "bg-white/95 backdrop-blur-md border-b border-gray-100"
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -32,7 +38,7 @@ export default function Navbar() {
               <circle cx="13" cy="12" r="2" fill="white" />
             </svg>
           </div>
-          <span className={`font-bold text-[17px] tracking-tight transition-colors ${scrolled ? "text-ink" : "text-white"}`}>
+          <span className={`font-bold text-[17px] tracking-tight transition-colors ${isDark ? "text-white" : "text-ink"}`}>
             GoLegit
           </span>
         </Link>
@@ -47,7 +53,7 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               className={`text-sm font-medium transition-colors ${
-                scrolled ? "text-ink-muted hover:text-ink" : "text-white/60 hover:text-white"
+                isDark ? "text-white/60 hover:text-white" : "text-ink-muted hover:text-ink"
               }`}
             >
               {link.label}
@@ -56,7 +62,7 @@ export default function Navbar() {
           <Link
             href="/simulador"
             className={`text-sm font-medium transition-colors ${
-              scrolled ? "text-ink-muted hover:text-ink" : "text-white/60 hover:text-white"
+              isDark ? "text-white/60 hover:text-white" : "text-ink-muted hover:text-ink"
             }`}
           >
             Simuladores
@@ -64,16 +70,16 @@ export default function Navbar() {
           <Link
             href="/novedades"
             className={`text-sm font-medium transition-colors ${
-              scrolled ? "text-ink-muted hover:text-ink" : "text-white/60 hover:text-white"
+              isDark ? "text-white/60 hover:text-white" : "text-ink-muted hover:text-ink"
             }`}
           >
             Novedades
           </Link>
           <CtaButton
             className={`inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
-              scrolled
-                ? "bg-ink text-white hover:bg-ink-soft"
-                : "bg-white text-ink hover:bg-white/90"
+              isDark
+                ? "bg-white text-ink hover:bg-white/90"
+                : "bg-ink text-white hover:bg-ink-soft"
             }`}
           >
             Empieza gratis
@@ -82,7 +88,7 @@ export default function Navbar() {
 
         {/* Mobile menu button */}
         <button
-          className={`md:hidden p-2 transition-colors ${scrolled ? "text-ink-muted hover:text-ink" : "text-white/60 hover:text-white"}`}
+          className={`md:hidden p-2 transition-colors ${isDark ? "text-white/60 hover:text-white" : "text-ink-muted hover:text-ink"}`}
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Menú"
         >
