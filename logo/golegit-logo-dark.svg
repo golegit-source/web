@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GoLegit — Logo horizontal (fondo oscuro)
+     Burbuja: trazo blanco
+     Wordmark: "Go" brand-400 (#4ade80) + "Legit" blanco -->
+<svg width="560" height="140" viewBox="0 0 140 35" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bubble: white stroke, no fill -->
+  <path
+    fill="none"
+    stroke="white"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="
+      M4.5,4 H22.5 Q25,4 25,6.5
+      V22 Q25,25 22.5,25
+      H10.5 L6,33
+      V25 Q3,25 3,22
+      V6.5 Q3,4 4.5,4 Z
+    "
+  />
+  <!-- Checkmark: brand-400 (contrasta sobre el trazo blanco) -->
+  <polyline
+    fill="none"
+    stroke="#4ade80"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    points="8,15 11.5,18.5 19.5,10"
+  />
+  <!-- Wordmark: "Go" brand-400, "Legit" white -->
+  <text
+    x="31"
+    y="24"
+    font-family="'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif"
+    font-size="21"
+    letter-spacing="-0.5"
+    font-weight="800"
+  >
+    <tspan fill="#4ade80">Go</tspan><tspan fill="white">Legit</tspan>
+  </text>
+</svg>

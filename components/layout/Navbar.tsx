@@ -34,8 +34,17 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-7 h-7 bg-brand-600 rounded-md flex items-center justify-center transition-colors group-hover:bg-brand-700">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M3 4h10M3 8h7M3 12h5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-              <circle cx="13" cy="12" r="2" fill="white" />
+              <path
+                fill="white"
+                d="M3,1.5 H13 Q14.5,1.5 14.5,3 V10 Q14.5,11.5 13,11.5 H6.5 L4,14.5 V11.5 Q1.5,11.5 1.5,10 V3 Q1.5,1.5 3,1.5 Z"
+              />
+              <polyline
+                points="5,6.5 7.5,9 11.5,4.5"
+                stroke="#16a34a"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
           <span className={`font-bold text-[17px] tracking-tight transition-colors ${isDark ? "text-white" : "text-ink"}`}>

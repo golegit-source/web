@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GoLegit — Ícono / Favicon
+     Concepto: burbuja rectangular (documento) con checkmark
+     Cola abajo-izquierda = GoLegit habla hacia el empleador
+     Fondo verde + burbuja blanca para legibilidad a 16px
+     Exportar a: 16, 32, 48, 180, 512 px -->
+<svg width="512" height="512" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- App icon background: rounded square -->
+  <rect width="24" height="24" rx="5" fill="#16a34a"/>
+  <!-- Bubble: white fill, rectangular corners (rx≈2), tail bottom-left -->
+  <path fill="white" d="
+    M5.5,4 H18.5 Q21,4 21,6.5
+    V13.5 Q21,16 18.5,16
+    H8.5 L4.5,20.5
+    V16 Q3,16 3,13.5
+    V6.5 Q3,4 5.5,4 Z
+  "/>
+  <!-- Checkmark: green on white bubble -->
+  <polyline
+    fill="none"
+    stroke="#16a34a"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    points="7.5,10.5 10.5,13 16,7.5"
+  />
+</svg>
