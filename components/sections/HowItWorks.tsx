@@ -24,35 +24,33 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="como-funciona" className="py-24 bg-paper-warm">
+    <section id="como-funciona" className="py-24 bg-[#fafaf8]">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-brand-600 text-sm font-medium tracking-wide uppercase">
-            Cómo funciona
-          </span>
+          <p className="text-sm text-ink-light mb-4">Cómo funciona</p>
           <h2
-            className="text-4xl lg:text-5xl font-light text-ink mt-3 leading-tight"
+            className="text-4xl lg:text-5xl font-light text-ink mt-2 leading-tight"
             style={{ fontFamily: "var(--font-fraunces)" }}
           >
             Tres pasos para tener{" "}
-            <em className="not-italic italic">todo en regla</em>
+            <em className="not-italic text-ink-muted">todo en regla</em>
           </h2>
         </div>
 
         {/* Steps */}
         <div className="relative">
           {/* Connector line (desktop) */}
-          <div className="hidden lg:block absolute top-8 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-brand-200" />
+          <div className="hidden lg:block absolute top-5 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-gray-200" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {steps.map((step, i) => (
               <div key={i} className="relative">
-                {/* Number bubble */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 rounded-2xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-600/20">
+                {/* Number */}
+                <div className="flex items-center gap-4 mb-7">
+                  <div className="w-10 h-10 rounded-full bg-ink text-white flex items-center justify-center flex-shrink-0">
                     <span
-                      className="text-lg font-light"
+                      className="text-sm font-light"
                       style={{ fontFamily: "var(--font-fraunces)" }}
                     >
                       {step.number}
@@ -60,17 +58,17 @@ export default function HowItWorks() {
                   </div>
                   {/* Mobile connector */}
                   {i < steps.length - 1 && (
-                    <div className="lg:hidden flex-1 h-px bg-brand-200" />
+                    <div className="lg:hidden flex-1 h-px bg-gray-200" />
                   )}
                 </div>
 
-                <h3 className="text-xl font-semibold text-ink mb-3">
+                <h3 className="text-lg font-semibold text-ink mb-3">
                   {step.title}
                 </h3>
-                <p className="text-ink-muted leading-relaxed mb-4">
+                <p className="text-ink-muted leading-relaxed mb-4 text-sm">
                   {step.description}
                 </p>
-                <p className="text-sm text-ink-light leading-relaxed bg-white border border-brand-100 rounded-xl p-3">
+                <p className="text-sm text-ink-light leading-relaxed border-l-2 border-gray-200 pl-3">
                   {step.detail}
                 </p>
               </div>
