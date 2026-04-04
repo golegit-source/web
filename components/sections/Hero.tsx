@@ -13,13 +13,13 @@ function ChatMockup() {
 
       {/* Phone frame */}
       <div
-        className="relative bg-[#1c1c1e] rounded-[2.8rem] shadow-2xl overflow-hidden border border-white/10 w-full h-full"
+        className="relative bg-[#1c1c1e] rounded-[2.8rem] shadow-2xl overflow-hidden border border-white/10 w-full h-full flex flex-col"
       >
         {/* Dynamic island */}
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-[#1c1c1e] rounded-full z-20" />
 
         {/* App header */}
-        <div className="bg-brand-700 pt-12 pb-3 px-4 flex items-center gap-3">
+        <div className="bg-brand-700 pt-12 pb-3 px-4 flex items-center gap-3 flex-shrink-0">
           <div className="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             GL
           </div>
@@ -30,7 +30,7 @@ function ChatMockup() {
         </div>
 
         {/* Chat area */}
-        <div className="h-full px-3 py-3 flex flex-col gap-2.5 overflow-hidden bg-[#f0f2f5]">
+        <div className="flex-1 min-h-0 px-3 py-3 flex flex-col gap-2.5 overflow-hidden bg-[#f0f2f5]">
           <div className="flex justify-center">
             <span className="text-[9px] bg-white/80 text-gray-500 px-2.5 py-0.5 rounded-full font-medium">
               Hoy
