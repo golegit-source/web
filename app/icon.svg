@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GoLegit — Ícono / Favicon
+     Misma forma de burbuja que el logo, escalada a 24x24
+     Exportar a: 16, 32, 48, 180, 512 px -->
+<svg width="512" height="512" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- App icon background -->
+  <rect width="24" height="24" rx="5" fill="#16a34a"/>
+  <!-- Bubble: mismas proporciones que logo (casi cuadrada), cola abajo-izq -->
+  <path
+    fill="white"
+    d="M4,2 H20 Q22,2 22,4 V16 Q22,18 20,18 H9 L5.5,22.5 V18 Q2,18 2,16 V4 Q2,2 4,2 Z"
+  />
+  <!-- Checkmark: verde sobre blanco -->
+  <polyline
+    fill="none"
+    stroke="#16a34a"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    points="7,10.5 10,13.5 16.5,7"
+  />
+</svg>
