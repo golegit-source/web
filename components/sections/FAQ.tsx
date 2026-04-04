@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "¿Puedo modificar el contrato después?",
-    a: "Sí. Cualquier modificación (sueldo, jornada, domicilio, etc.) se hace a través de un Anexo de Modificación, que es el mecanismo legal correcto. El contrato original no se toca y el historial queda completo.",
+    a: "Sí. Cualquier modificación se hace a través de un Anexo de Modificación, que es el mecanismo legal correcto. El contrato original no se toca y el historial queda completo.",
   },
   {
     q: "¿Cómo se identifica mi trabajadora en el sistema?",
@@ -47,13 +47,13 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >
-        <span className="font-medium text-ink text-sm leading-snug">{q}</span>
+        <span className="font-semibold text-ink text-sm leading-snug">{q}</span>
         <div
           className={`w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5 transition-transform ${
-            open ? "rotate-180 bg-brand-50 border-brand-200" : ""
+            open ? "rotate-180 bg-ink border-ink" : ""
           }`}
         >
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke={open ? "white" : "currentColor"} strokeWidth="1.5">
             <path d="M2 4l4 4 4-4" />
           </svg>
         </div>
@@ -69,30 +69,23 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function FAQ() {
   return (
-    <section id="faq" className="py-24 bg-paper-warm">
+    <section id="faq" className="py-24 bg-[#fafaf8]">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
-          {/* Left: header */}
           <div className="lg:col-span-1">
-            <span className="text-brand-600 text-sm font-medium tracking-wide uppercase">
-              FAQ
-            </span>
-            <h2
-              className="text-3xl lg:text-4xl font-light text-ink mt-3 mb-4 leading-tight"
-              style={{ fontFamily: "var(--font-fraunces)" }}
-            >
+            <p className="text-xs font-semibold tracking-widest text-ink-light uppercase mb-5">FAQ</p>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-ink leading-tight tracking-tight mb-4">
               Preguntas frecuentes
             </h2>
             <p className="text-sm text-ink-muted leading-relaxed">
               ¿Tienes otra pregunta?{" "}
-              <CtaButton className="text-brand-600 hover:text-brand-700 underline underline-offset-2">
+              <CtaButton className="text-brand-600 hover:text-brand-700 font-semibold underline underline-offset-2">
                 Escríbenos por WhatsApp
               </CtaButton>{" "}
               y te respondemos.
             </p>
           </div>
 
-          {/* Right: accordion */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 px-6">
             {faqs.map((faq, i) => (
               <FAQItem key={i} q={faq.q} a={faq.a} />

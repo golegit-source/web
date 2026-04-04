@@ -47,7 +47,7 @@ const features = [
       </svg>
     ),
     title: "Vacaciones y licencias",
-    description: "Registro de días de vacaciones acumulados, solicitudes, licencias médicas y ausencias con su impacto en la liquidación.",
+    description: "Registro de días acumulados, solicitudes, licencias médicas y ausencias con su impacto en la liquidación.",
     status: "soon",
   },
   {
@@ -66,41 +66,34 @@ export default function Features() {
   return (
     <section className="py-24 bg-white">
       <div className="max-w-6xl mx-auto px-6">
-        {/* Header */}
         <div className="max-w-2xl mb-14">
-          <span className="text-brand-600 text-sm font-medium tracking-wide uppercase">
-            Qué incluye
-          </span>
-          <h2
-            className="text-4xl lg:text-5xl font-light text-ink mt-3 leading-tight"
-            style={{ fontFamily: "var(--font-fraunces)" }}
-          >
-            Todo lo que necesitas{" "}
-            <em className="not-italic italic text-ink-muted">en una sola herramienta</em>
+          <p className="text-xs font-semibold tracking-widest text-ink-light uppercase mb-5">Qué incluye</p>
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-ink leading-tight tracking-tight">
+            Todo lo que necesitas,
+            <br />
+            <span className="text-ink-muted font-bold">en un solo lugar.</span>
           </h2>
         </div>
 
-        {/* Feature grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {features.map((feature, i) => (
             <div
               key={i}
               className={`relative p-6 rounded-2xl border transition-all group ${
                 feature.status === "live"
-                  ? "border-gray-100 bg-paper hover:border-brand-200 hover:shadow-sm"
-                  : "border-gray-100 bg-gray-50/50 opacity-70"
+                  ? "border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm"
+                  : "border-gray-100 bg-gray-50/50 opacity-60"
               }`}
             >
-              {/* Status badge */}
               {feature.status === "soon" && (
-                <span className="absolute top-4 right-4 text-[10px] font-medium text-ink-light bg-gray-100 px-2 py-0.5 rounded-full">
+                <span className="absolute top-4 right-4 text-[10px] font-semibold text-ink-light bg-gray-100 px-2 py-0.5 rounded-full">
                   Próximamente
                 </span>
               )}
               {feature.status === "live" && (
                 <span className="absolute top-4 right-4 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-brand-500 rounded-full" />
-                  <span className="text-[10px] font-medium text-brand-600">Disponible</span>
+                  <span className="text-[10px] font-semibold text-brand-600">Disponible</span>
                 </span>
               )}
 
@@ -114,10 +107,8 @@ export default function Features() {
                 {feature.icon}
               </div>
 
-              <h3 className="font-semibold text-ink mb-2">{feature.title}</h3>
-              <p className="text-sm text-ink-muted leading-relaxed">
-                {feature.description}
-              </p>
+              <h3 className="font-bold text-ink mb-2">{feature.title}</h3>
+              <p className="text-sm text-ink-muted leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
