@@ -20,8 +20,21 @@ function ChatMockup() {
 
         {/* App header */}
         <div className="bg-brand-700 pt-12 pb-3 px-4 flex items-center gap-3 flex-shrink-0">
-          <div className="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            GL
+          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+            <svg width="18" height="22" viewBox="0 0 28 35" xmlns="http://www.w3.org/2000/svg">
+              <path
+                fill="#16a34a"
+                d="M4.5,4 H22.5 Q25,4 25,6.5 V22 Q25,25 22.5,25 H10.5 L6,33 V25 Q3,25 3,22 V6.5 Q3,4 4.5,4 Z"
+              />
+              <polyline
+                fill="none"
+                stroke="white"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points="8,15 11.5,18.5 19.5,10"
+              />
+            </svg>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-xs font-semibold">GoLegit</p>
@@ -160,8 +173,8 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Right: Chat mockup */}
-        <div className="flex justify-center lg:justify-end animate-fade-up animate-delay-200">
+        {/* Right: Chat mockup — hidden on mobile */}
+        <div className="hidden lg:flex justify-end animate-fade-up animate-delay-200">
           <ChatMockup />
         </div>
       </div>
