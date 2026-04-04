@@ -18,6 +18,22 @@ const plans = [
   },
 ];
 
+const liteIncluded = [
+  "Contrato de trabajo",
+  "Anexos de modificación",
+  "Finiquito",
+  "PDF descargable",
+];
+
+const liteExcluded = [
+  "Liquidación mensual automática",
+  "Entrega por WhatsApp y email",
+  "Notificaciones a la trabajadora",
+  "Recordatorios de pago y vencimientos",
+  "Historial con registro probatorio",
+  "Soporte por WhatsApp",
+];
+
 const included = [
   "Contrato de trabajo completo",
   "Anexos de modificación ilimitados",
@@ -25,6 +41,7 @@ const included = [
   "PDF entregado por WhatsApp y email",
   "Historial con registro probatorio",
   "Notificaciones a la trabajadora",
+  "Recordatorios de pago y vencimientos",
   "Soporte por WhatsApp",
 ];
 
@@ -148,34 +165,65 @@ export default function Pricing() {
           })}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <div>
-              <h3 className="font-bold text-ink mb-1">Todo incluido en todos los planes</h3>
-              <p className="text-sm text-ink-muted mb-6">Sin costos ocultos. Sin add-ons.</p>
-              <ul className="space-y-2.5">
-                {included.map((item, i) => (
-                  <li key={i} className="flex items-center gap-2.5 text-sm text-ink-muted">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Lite features */}
+          <div className="bg-gray-50/50 border border-gray-100 rounded-2xl p-6 opacity-70">
+            <p className="text-xs font-semibold text-ink-light uppercase tracking-widest mb-4">Lite incluye</p>
+            <ul className="space-y-2 mb-5">
+              {liteIncluded.map((item, i) => (
+                <li key={i} className="flex items-center gap-2.5 text-sm text-ink-muted">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0">
+                    <path d="M2 6l3 3 5-5" stroke="#15803d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="border-t border-gray-200 pt-4">
+              <p className="text-xs font-semibold text-ink-light uppercase tracking-widest mb-3">No incluye</p>
+              <ul className="space-y-2">
+                {liteExcluded.map((item, i) => (
+                  <li key={i} className="flex items-center gap-2.5 text-sm text-gray-400">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0">
-                      <path d="M2 6l3 3 5-5" stroke="#15803d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M2 2l8 8M10 2l-8 8" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="space-y-3">
-              <div className="p-4 border border-gray-100 rounded-xl">
-                <p className="text-sm font-bold text-ink mb-1">1 mes gratis para empezar</p>
-                <p className="text-xs text-ink-muted">Sin tarjeta de crédito. Sin permanencia. Si no te sirve, no pagas nada.</p>
+          </div>
+
+          {/* Full plans — spans 2 columns */}
+          <div className="md:col-span-2 bg-white rounded-2xl border border-gray-100 p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-start">
+              <div>
+                <h3 className="font-bold text-ink mb-1">Todo incluido en los planes activos</h3>
+                <p className="text-sm text-ink-muted mb-6">Sin costos ocultos. Sin add-ons.</p>
+                <ul className="space-y-2.5">
+                  {included.map((item, i) => (
+                    <li key={i} className="flex items-center gap-2.5 text-sm text-ink-muted">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0">
+                        <path d="M2 6l3 3 5-5" stroke="#15803d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="p-4 border border-gray-100 rounded-xl">
-                <p className="text-sm font-bold text-ink mb-1">Pago anual con 20% de descuento</p>
-                <p className="text-xs text-ink-muted">Equivale a 2 meses gratis al año.</p>
-              </div>
-              <div className="p-4 border border-gray-100 rounded-xl">
-                <p className="text-sm font-bold text-ink mb-1">Pago vencido = solo lectura</p>
-                <p className="text-xs text-ink-muted">Puedes consultar todo lo anterior, pero no generar documentos nuevos hasta regularizar.</p>
+              <div className="space-y-3">
+                <div className="p-4 border border-gray-100 rounded-xl">
+                  <p className="text-sm font-bold text-ink mb-1">1 mes gratis para empezar</p>
+                  <p className="text-xs text-ink-muted">Sin tarjeta de crédito. Sin permanencia. Si no te sirve, no pagas nada.</p>
+                </div>
+                <div className="p-4 border border-gray-100 rounded-xl">
+                  <p className="text-sm font-bold text-ink mb-1">Pago anual con 20% de descuento</p>
+                  <p className="text-xs text-ink-muted">Equivale a 2 meses gratis al año.</p>
+                </div>
+                <div className="p-4 border border-gray-100 rounded-xl">
+                  <p className="text-sm font-bold text-ink mb-1">Pago vencido = solo lectura</p>
+                  <p className="text-xs text-ink-muted">Puedes consultar todo lo anterior, pero no generar documentos nuevos hasta regularizar.</p>
+                </div>
               </div>
             </div>
           </div>
