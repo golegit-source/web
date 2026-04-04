@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- GoLegit — Favicon
-     Path y puntos extraídos directamente de golegit-logo.svg -->
-<svg width="512" height="512" viewBox="0 0 28 35" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0" y="0" width="28" height="35" rx="5" fill="#16a34a"/>
+<!-- GoLegit — Favicon adaptivo
+     Light mode: trazo verde sobre fondo blanco (= golegit-icon-light)
+     Dark mode:  trazo blanco + checkmark brand-400 sobre fondo zinc-900 (= golegit-icon-dark)
+     Soportado en Chrome, Firefox, Safari modernos. favicon.ico actúa de fallback. -->
+<svg width="28" height="35" viewBox="0 0 28 35" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .bg   { fill: #ffffff; }
+    .bubble { stroke: #16a34a; }
+    .check  { stroke: #16a34a; }
+    @media (prefers-color-scheme: dark) {
+      .bg     { fill: #18181b; }
+      .bubble { stroke: #ffffff; }
+      .check  { stroke: #4ade80; }
+    }
+  </style>
+  <rect class="bg" x="0" y="0" width="28" height="35" rx="5"/>
   <path
-    fill="white"
+    class="bubble"
+    fill="none"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
     d="M4.5,4 H22.5 Q25,4 25,6.5 V22 Q25,25 22.5,25 H10.5 L6,33 V25 Q3,25 3,22 V6.5 Q3,4 4.5,4 Z"
   />
   <polyline
+    class="check"
     fill="none"
-    stroke="#16a34a"
     stroke-width="1.8"
     stroke-linecap="round"
     stroke-linejoin="round"
