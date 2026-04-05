@@ -63,7 +63,7 @@ function ChatMockup() {
           <div className="self-end max-w-[78%]">
             <div className="bg-[#25d366] rounded-2xl rounded-tr-sm px-3 py-2 shadow-sm">
               <p className="text-[11px] text-white leading-snug">
-                Puertas adentro, $520.000 brutos.
+                Puertas adentro, $820.000 brutos.
               </p>
               <p className="text-[9px] text-white/70 text-right mt-1.5">09:15 ✓✓</p>
             </div>
