@@ -340,8 +340,24 @@ Edge Function (Vercel Edge Network — sin cold starts). Consulta la tabla `url_
 ## Pendientes antes de lanzar al público
 
 - [ ] Activar WhatsApp: cambiar `whatsappEnabled: true` y el número real en `lib/config.ts`
-- [ ] Completar `app/privacidad/page.tsx` (Ley 19.628 + 21.719)
-- [ ] Completar `app/terminos/page.tsx`
+- [ ] Completar `app/privacidad/page.tsx` — base: Ley 19.628 + Ley 21.719. Puntos críticos a cubrir:
+  - Datos recopilados: nombre, RUT, domicilio, teléfono WhatsApp, email
+  - **Datos biométricos sensibles** (cuando se implemente verificación de identidad): selfie, hash facial, liveness score, IP, timestamp — requiere consentimiento explícito, finalidad declarada y plazo de retención definido (Ley 21.719, Art. 16 letra b)
+  - Finalidad del tratamiento: generación de documentos laborales, firma electrónica simple (Ley 19.799)
+  - Responsable del tratamiento: Cubillos y Compañía Limitada, RUT 78.048.033-5
+  - Transferencia a terceros: Supabase (almacenamiento), Resend (email), Meta/WhatsApp (canal)
+  - Derechos ARCOP: acceso, rectificación, cancelación, oposición, portabilidad
+  - Contacto: soporte@golegit.cl
+  - Retención de datos biométricos: definir plazo (sugerencia: duración del contrato + 5 años para prescripción laboral)
+
+- [ ] Completar `app/terminos/page.tsx` — puntos críticos a cubrir:
+  - Descripción del servicio: plataforma de gestión laboral TCP por WhatsApp
+  - **PIN de firma electrónica**: es firma electrónica simple (FES) bajo Ley 19.799. No equivale a firma electrónica avanzada (FEA). El usuario acepta expresamente este alcance.
+  - **Verificación de identidad**: el proceso de verificación biométrica (selfie + cédula) genera un registro de auditoría con valor probatorio. El usuario consiente expresamente antes de activar la cámara.
+  - Responsabilidad del empleador: la veracidad de los datos ingresados es responsabilidad del usuario
+  - Limitación de responsabilidad: GoLegit genera documentos basados en los datos proporcionados; la validez legal depende de la exactitud de esos datos
+  - Jurisdicción: tribunales de Santiago, ley chilena
+  - Operado por: Cubillos y Compañía Limitada, RUT 78.048.033-5
 - [ ] Configurar dominio `golegit.cl` en Vercel
 - [ ] Activar analytics (Vercel Analytics o similar)
 - [ ] Plan Lite: desarrollar feature de solo generación de documentos
